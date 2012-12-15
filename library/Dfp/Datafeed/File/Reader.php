@@ -43,6 +43,20 @@ class Dfp_Datafeed_File_Reader extends Dfp_Datafeed_File_Abstract implements Dfp
     protected $_formatNamespace = 'Dfp_Datafeed_File_Reader_Format';
 
     /**
+     * Holds the current position into the feed.
+     *
+     * @var int
+     */
+    protected $_position = 0;
+    
+    /**
+     * Holds the current record from the feed.
+     *
+     * @var array
+     */
+    protected $_currentRecord;
+    
+    /**
     * @see Dfp_Option_Interface::setOptions()
     * @return Dfp_Datafeed_File_Reader
     * @throws Dfp_Datafeed_File_Reader_Exception
@@ -116,45 +130,66 @@ class Dfp_Datafeed_File_Reader extends Dfp_Datafeed_File_Abstract implements Dfp
         return $this;
     }
     
-	/**
-     * @see Iterator::current()
-     */
-    public function current()
-    {
-        return $this->getFormat()->current();
-    }
-
-	/**
-     * @see Iterator::key()
-     */
-    public function key()
-    {
-        return $this->getFormat()->key();
-    }
-
-	/**
-     * @see Iterator::next()
-     */
-    public function next()
-    {
-        $this->getFormat()->next();
-    }
-
-	/**
+    /**
      * @see Iterator::rewind()
      */
     public function rewind()
     {
-        $this->getFormat()->rewind();
+    	$this->getFormat()->resetFeed();
+    	$this->_position = 0;
+    	$this->next(); //load first record
     }
-
-	/**
+    
+    /**
+     * @see Iterator::next()
+     */
+    public function next()
+    {
+    	do {
+    		$this->_currentRecord = $this->getFormat()->loadNextRecord();
+    		if (!is_array($this->_currentRecord)) {
+    			return;
+    		}
+    		$this->_position++;
+    		$this->_currentRecord = $this->getRecordFilterer()->filterRecord($this->_currentRecord);
+    		$valid = $this->getRecordValidator()->validateRecord($this->_currentRecord);
+    		
+    		if (!$valid) {
+    			$errors = $this->getRecordValidator()->getErrors();
+    			if (is_array($errors)) {
+    				foreach ($errors AS $error) {
+    					$this->addError(sprintf('Validation error on line %d: %s', $this->_position, $error));
+    				}
+    			} else {
+    				$this->addError(sprintf('Validation error on line %d', $this->_position));
+    			}
+    		}
+    		
+    	} while (!$valid);
+    	
+    }
+    
+    /**
      * @see Iterator::valid()
      */
     public function valid()
     {
-        return $this->getFormat()->valid();
+    	return (bool) $this->_currentRecord;
     }
-
-
+    
+    /**
+     * @see Iterator::current()
+     */
+    public function current()
+    {
+    	return $this->_currentRecord;
+    }
+    
+    /**
+     * @see Iterator::key()
+     */
+    public function key()
+    {
+    	return $this->_position;
+    } 
 }
