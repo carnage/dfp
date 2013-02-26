@@ -25,7 +25,7 @@
  * @author      Chris Riley <chris.riley@imhotek.net>
  * @since       2013-02-21
  */
-interface Dfp_Datafeed_File_Locator_Adapter_Interface
+interface Dfp_Datafeed_File_Locator_Adapter_Interface extends Dfp_Option_Interface
 {
 	/**
 	 * This method should return an array of files which pass the filter rules 
