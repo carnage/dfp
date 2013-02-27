@@ -8,5 +8,8 @@
         <blacklist>
             <directory>/usr/share/php</directory>
         </blacklist>
+        <whitelist>
+            <directory>../library</directory>
+        </whitelist>
     </filter>
 </phpunit>
