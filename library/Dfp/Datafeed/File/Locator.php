@@ -53,6 +53,20 @@ class Dfp_Datafeed_File_Locator implements Dfp_Datafeed_File_Locator_Interface
 	protected $_adapters;
 	
 	/**
+	 * @throws Dfp_Datafeed_File_Locator_Exception
+	 */
+	public function __construct($options=null)
+	{
+		if ($options instanceof Zend_Config) {
+			$this->setConfig($options);
+		} elseif (is_array($options)) {
+			$this->setOptions($options);
+		} elseif (!is_null($options)) {
+			throw new Dfp_Datafeed_File_Reader_Exception('Invalid parameter to constructor');
+		}		
+	}
+	
+	/**
 	 * @see Dfp_Option_Interface::setConfig
 	 * @param Zend_Config $config
 	 */

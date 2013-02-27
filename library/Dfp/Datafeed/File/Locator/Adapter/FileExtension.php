@@ -75,9 +75,10 @@ class Dfp_Datafeed_File_Locator_Adapter_FileExtension extends Dfp_Datafeed_File_
 	protected function _filterFileList(Iterator $files)
 	{
 		$output = array();
+		$extensions = array_map('strtolower', $this->getExtensions());
 		foreach ($files AS $file) {
 			$ext = pathinfo($file, PATHINFO_EXTENSION);
-			if (in_array(strtolower($ext), $this->getExtensions())) {
+			if (in_array(strtolower($ext), $extensions)) {
 				$output[] = $file;
 			}
 		}

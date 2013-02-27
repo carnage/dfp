@@ -11,22 +11,22 @@
 *
 * @category    Dfp
 * @package     Datafeed
-* @subpackage  File_Locator_Adapter_Exception
+* @subpackage  File_Locator_Exception
 * @copyright   Copyright (c) 2012 PHP Datafeed Library
 * @version     $Id$
 * @since       2012-04-23
 */
 /**
- * Dfp_Datafeed_File_Locator_Adapter_Exception Exception.
+ * Dfp_Datafeed_File_Locator_Exception Exception.
 *
 * @category    Dfp
 * @package     Datafeed
-* @subpackage  File_Locator_Adapter_Exception
+* @subpackage  File_Locator_Exception
 * @copyright   Copyright (c) 2012 PHP Datafeed Library
 * @author      Chris Riley <chris.riley@imhotek.net>
 * @since       2012-04-23
 */
-class Dfp_Datafeed_File_Locator_Adapter_Exception extends Dfp_Datafeed_File_Locator_Exception
+class Dfp_Datafeed_File_Locator_Exception extends Dfp_Datafeed_File_Exception
 {
 
 }
