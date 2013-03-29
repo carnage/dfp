@@ -6,6 +6,7 @@ abstract class Dfp_Datafeed_File_Locator_Adapter_Abstract implements Dfp_Datafee
 	public function setInnerIterator(Iterator $iterator)
 	{
 		$this->_iterator = $iterator;
+		$this->rewind();
 		return $this;
 	}
 	
@@ -16,16 +17,25 @@ abstract class Dfp_Datafeed_File_Locator_Adapter_Abstract implements Dfp_Datafee
 	
 	public function current()
 	{
+		if (!$this->accept()) {
+			$this->next();
+		}		
 		return $this->getInnerIterator()->current();
 	}
 	
 	public function rewind()
 	{
-		return $this->getInnerIterator()->rewind();
+		$this->getInnerIterator()->rewind();
+		if (!$this->accept()) {
+			$this->next();
+		}
 	}
 	
 	public function key()
 	{
+		if (!$this->accept()) {
+			$this->next();
+		}		
 		return $this->getInnerIterator()->key();
 	}
 	
@@ -33,15 +43,18 @@ abstract class Dfp_Datafeed_File_Locator_Adapter_Abstract implements Dfp_Datafee
 	{
 		do {
 			$return = $this->getInnerIterator()->next();
-		} while (!$this->accept($this->getInnerIterator()->current())); 
+		} while (!$this->accept()); 
 			
 		return $return;
 	}
 	
 	public function valid()
-	{
+	{		
+		if (!$this->accept()) {
+			$this->next();
+		}
 		return $this->getInnerIterator()->valid();
 	}
 	
-	abstract public function accept($value); 
+	abstract public function accept(); 
 }  
