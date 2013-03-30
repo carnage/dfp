@@ -30,39 +30,11 @@
 class Dfp_Datafeed_Transfer_Adapter_Stream extends Dfp_Datafeed_Transfer_Adapter_Abstract
 {
     /**
-     * Holds the schema type to connect with (should be ftp or ftps)
+     * Holds the uri object used for remote connections
      *
-     * @var string
+     * @var Dfp_Datafeed_Transfer_Uri
      */
-    protected $_schema;
-
-    /**
-     * Holds the hostname of the server to connect to
-     *
-     * @var string
-     */
-    protected $_host;
-
-    /**
-     * Holds the port to connect to the server on
-     *
-     * @var string
-     */
-    protected $_port;
-
-    /**
-     * Holds the username to connect to the server with
-     *
-     * @var string
-     */
-    protected $_username;
-
-    /**
-     * Holds the password to use when connecting to the server
-     *
-     * @var string
-     */
-    protected $_password;
+    protected $_uri;
 
     /**
      * Holds the base path to use for locating files locally. Files will be sent from and saved to this location.
@@ -72,56 +44,6 @@ class Dfp_Datafeed_Transfer_Adapter_Stream extends Dfp_Datafeed_Transfer_Adapter
     protected $_basePath;
 
     /**
-     * Getter for schema
-     *
-     * @return string
-     */
-    public function getSchema()
-    {
-        return $this->_schema;
-    }
-
-    /**
-     * Getter for host
-     *
-     * @return string
-     */
-    public function getHost()
-    {
-        return $this->_host;
-    }
-
-    /**
-     * Getter for port
-     *
-     * @return string
-     */
-    public function getPort()
-    {
-        return $this->_port;
-    }
-
-    /**
-     * Getter for username
-     *
-     * @return string
-     */
-    public function getUsername()
-    {
-        return $this->_username;
-    }
-
-    /**
-     * Getter for password
-     *
-     * @return string
-     */
-    public function getPassword()
-    {
-        return $this->_password;
-    }
-
-    /**
      * Getter for base path
      *
      * @return string
@@ -129,66 +51,6 @@ class Dfp_Datafeed_Transfer_Adapter_Stream extends Dfp_Datafeed_Transfer_Adapter
     public function getBasePath()
     {
         return $this->_basePath;
-    }
-
-    /**
-     * Setter for schema
-     *
-     * @param string $schema
-     * @return Dfp_Datafeed_Transfer_Adapter_Stream
-     */
-    public function setSchema($schema)
-    {
-        $this->_schema = $schema;
-        return $this;
-    }
-
-    /**
-     * Setter for host
-     *
-     * @param string $host
-     * @return Dfp_Datafeed_Transfer_Adapter_Stream
-     */
-    public function setHost($host)
-    {
-        $this->_host = $host;
-        return $this;
-    }
-
-    /**
-     * Setter for port
-     *
-     * @param string $port
-     * @return Dfp_Datafeed_Transfer_Adapter_Stream
-     */
-    public function setPort($port)
-    {
-        $this->_port = $port;
-        return $this;
-    }
-
-    /**
-     * Setter for username
-     *
-     * @param string $username
-     * @return Dfp_Datafeed_Transfer_Adapter_Stream
-     */
-    public function setUsername($username)
-    {
-        $this->_username = $username;
-        return $this;
-    }
-
-    /**
-     * Setter for password
-     *
-     * @param string $password
-     * @return Dfp_Datafeed_Transfer_Adapter_Stream
-     */
-    public function setPassword($password)
-    {
-        $this->_password = $password;
-        return $this;
     }
 
     /**
@@ -217,41 +79,17 @@ class Dfp_Datafeed_Transfer_Adapter_Stream extends Dfp_Datafeed_Transfer_Adapter
     {
         $options = array_change_key_case($options);
 
-        if (isset($options['schema'])) {
-            if (is_string($options['schema'])) {
-                $this->setSchema($options['schema']);
-            } else {
-                throw new Dfp_Datafeed_Transfer_Exception('Invalid Schema');
-            }
+        if (isset($options['uri'])) {
+        	if ($options['uri'] instanceof Dfp_Datafeed_Transfer_Uri) {
+        		$this->setUri($options['uri']);
+        	} elseif (is_array($options['uri'])) {
+        		$this->getUri()->setOptions($options['uri']);
+        	} else {
+        		throw new Dfp_Datafeed_Transfer_Exception('Invalid value for uri option');
+        	}
+        	unset($options['uri']);
         }
-        if (isset($options['host'])) {
-            if (is_string($options['host'])) {
-                $this->setHost($options['host']);
-            } else {
-                throw new Dfp_Datafeed_Transfer_Exception('Invalid Host');
-            }
-        }
-        if (isset($options['port'])) {
-            if (is_numeric($options['port'])) {
-                $this->setPort($options['port']);
-            } else {
-                throw new Dfp_Datafeed_Transfer_Exception('Invalid Port');
-            }
-        }
-        if (isset($options['username'])) {
-            if (is_string($options['username'])) {
-                $this->setUsername($options['username']);
-            } else {
-                throw new Dfp_Datafeed_Transfer_Exception('Invalid Username');
-            }
-        }
-        if (isset($options['password'])) {
-            if (is_string($options['password'])) {
-                $this->setPassword($options['password']);
-            } else {
-                throw new Dfp_Datafeed_Transfer_Exception('Invalid Password');
-            }
-        }
+        
         if (isset($options['basepath'])) {
             if (is_string($options['basepath'])) {
                 $this->setBasePath($options['basepath']);
@@ -307,41 +145,28 @@ class Dfp_Datafeed_Transfer_Adapter_Stream extends Dfp_Datafeed_Transfer_Adapter
     }
 
     /**
-     * Constructs a remote uri based on the adapter settings.
+     * Returns the uri object
      *
      * @throws Dfp_Datafeed_Transfer_Exception
-     * @return string
+     * @return Dfp_Datafeed_Transfer_Uri
      */
     public function getUri()
     {
-    	$uri = '';
-    
-    	if (!is_null($this->getSchema())) {
-        	$uri = $this->getSchema() . '://';
+    	if (is_null($this->_uri)) {
+    		$this->_uri = new Dfp_Datafeed_Transfer_Uri();
     	}
-    	
-        if (!is_null($this->getUsername())) {
-            $uri .= $this->getUsername();
-            if (!is_null($this->getPassword())) {
-                $uri .= ':' . $this->getPassword();
-            }
-            $uri .= '@';
-        }
-
-        if (is_null($this->getHost())) {
-            throw new Dfp_Datafeed_Transfer_Exception(
-            	'Host must be set. For local transfers, set it to the destination directory'
-            );
-        }
-
-        $uri .= $this->getHost();
-
-        if (!is_null($this->getPort())) {
-            $uri .= ':' . $this->getPort();
-        }
-
-        //$uri .= '/';
-
-        return $uri;
+        return $this->_uri;
+    }
+    
+    /**
+     * Setter for uri
+     * 
+     * @param Dfp_Datafeed_Transfer_Uri $uri
+     * @return Dfp_Datafeed_Transfer_Adapter_Stream
+     */
+    public function setUri(Dfp_Datafeed_Transfer_Uri $uri)
+    {
+    	$this->_uri = $uri;
+    	return $this;
     }
 }

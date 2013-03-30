@@ -114,10 +114,10 @@ class Dfp_Datafeed_Transfer_Adapter_AbstractTest extends PHPUnit_Framework_TestC
     
     public function testFactorySetOptions()
     {
-    	$options = array('classname' => 'Stream', 'options'=>array('host'=>'test.com'));
+    	$options = array('classname' => 'Stream', 'options'=>array('basepath'=>'/var/files'));
     	$class = Dfp_Datafeed_Transfer_Adapter_Abstract::factory($options);
     	
-    	$this->assertEquals('test.com', $class->getHost());
+    	$this->assertEquals('/var/files', $class->getBasePath());
     }
     
     /**

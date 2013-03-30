@@ -20,82 +20,12 @@ class Dfp_Datafeed_Transfer_Adapter_StreamTest extends PHPUnit_Framework_TestCas
 
         $this->assertTrue($passed, 'Exception not thrown');
 
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream(array('host'=>'test.com'));
-        $this->assertEquals('test.com', $sut->getHost());
+        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream(array('basePath'=>'/var/files'));
+        $this->assertEquals('/var/files', $sut->getBasePath());
 
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream(new Zend_Config(array('port'=>2222)));
-        $this->assertEquals(2222, $sut->getPort());
+        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream(new Zend_Config(array('basePath'=>'/var/files')));
+        $this->assertEquals('/var/files', $sut->getBasePath());
 
-    }
-
-    public function testSetSchema()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $sut->setSchema('ftp');
-
-        $this->assertEquals('ftp', $sut->getSchema());
-    }
-
-    public function testGetSchema()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $this->assertNull($sut->getSchema());
-    }
-
-    public function testSetHost()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $sut->setHost('example.com');
-
-        $this->assertEquals('example.com', $sut->getHost());
-    }
-
-    public function testGetHost()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $this->assertNull($sut->getHost());
-    }
-
-    public function testSetPort()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $sut->setPort('2222');
-
-        $this->assertEquals('2222', $sut->getPort());
-    }
-
-    public function testGetPort()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $this->assertNull($sut->getPort());
-    }
-
-    public function testSetUsername()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $sut->setUsername('user');
-
-        $this->assertEquals('user', $sut->getUsername());
-    }
-
-    public function testGetUsername()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $this->assertNull($sut->getUsername());
-    }
-
-    public function testSetPassword()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $sut->setPassword('pass');
-
-        $this->assertEquals('pass', $sut->getPassword());
-    }
-
-    public function testGetPassword()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $this->assertNull($sut->getPassword());
     }
 
     public function testSetBasePath()
@@ -115,7 +45,7 @@ class Dfp_Datafeed_Transfer_Adapter_StreamTest extends PHPUnit_Framework_TestCas
     /**
      * @dataProvider setOptionsProvider
      */
-    public function testSetOptions($var, $valid, $invalid, $message, $method)
+    public function testSetOptions($var, $valid, $expected, $invalid, $message, $method)
     {
         $options[$var] = $invalid;
         $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
@@ -135,55 +65,42 @@ class Dfp_Datafeed_Transfer_Adapter_StreamTest extends PHPUnit_Framework_TestCas
 
         $sut->setOptions($options);
 
-        $this->assertEquals($valid, $sut->{'get' . $method}());
+        $this->assertEquals($expected, $sut->{'get' . $method}());
     }
 
     public function setOptionsProvider()
     {
+    	$uri = new Dfp_Datafeed_Transfer_Uri();
+    	$uri->setHost('example.com');
+
+    	$uri2 = new Dfp_Datafeed_Transfer_Uri();
+    	$uri2->setHost('example2.com');    	
+    	
         return array(
-            array('schema', 'ftp', array(), 'Invalid Schema', 'Schema'),
-            array('host', 'example.com', array(), 'Invalid Host', 'Host'),
-            array('port', '2222', array(), 'Invalid Port', 'Port'),
-            array('username', 'user', array(), 'Invalid Username', 'Username'),
-            array('password', 'pass', array(), 'Invalid Password', 'Password'),
-            array('basepath', 'C:\\feedfiles', array(), 'Invalid Basepath', 'BasePath'),
+            //array('schema', 'ftp', array(), 'Invalid Schema', 'Schema'),
+            //array('host', 'example.com', array(), 'Invalid Host', 'Host'),
+            //array('port', '2222', array(), 'Invalid Port', 'Port'),
+            //array('username', 'user', array(), 'Invalid Username', 'Username'),
+            //array('password', 'pass', array(), 'Invalid Password', 'Password'),
+        	array('uri', array('host'=>'example.com'), $uri, 'example.com', 'Invalid value for uri option', 'Uri'),
+        	array('uri', $uri2, $uri2, 'example.com', 'Invalid value for uri option', 'Uri'),
+        	array('basepath', 'C:\\feedfiles', 'C:\\feedfiles', array(), 'Invalid Basepath', 'BasePath'),
         );
     }
-
-    /**
-    * @dataProvider getUriProvider
-    */
-    public function testGetUri($options, $expected, $expectedException = null)
+    
+    public function testGetUri()
     {
         $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $sut->setOptions($options);
-        try {
-            $uri = $sut->getUri();
-        } catch (Dfp_Datafeed_Transfer_Exception $e){
-            if (!is_null($expectedException)) {
-                $this->assertEquals($e->getMessage(),$expectedException);
-                return;
-            }
-        }
-
-        $this->assertEquals($expected, $uri);
+        $this->assertInstanceOf('Dfp_Datafeed_Transfer_Uri', $sut->getUri());
     }
 
-    public function getUriProvider()
+    public function testSetUri()
     {
-        return array(
-            array(array(), null, 'Host must be set. For local transfers, set it to the destination directory'),
-            array(array('host'=>'ftp.example.com', 'schema'=>'ftp'), 'ftp://ftp.example.com'),
-            array(array('host'=>'ftp.example.com', 'schema'=>'ftp', 'username'=>'user'), 'ftp://user@ftp.example.com'),
-            array(array('host'=>'ftp.example.com', 'schema'=>'ftp', 'password'=>'pass'), 'ftp://ftp.example.com'),
-            array(array('host'=>'ftp.example.com', 'schema'=>'ftp', 'port'=>'2222'), 'ftp://ftp.example.com:2222'),
-            array(
-                array('host'=>'ftp.example.com', 'schema'=>'ftp', 'username'=>'user', 'password'=>'pass'),
-                'ftp://user:pass@ftp.example.com'
-            ),
-        	array(array('host'=>'/var/files'), '/var/files')
-        );
-    }
+    	$sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
+    	$uri = new Dfp_Datafeed_Transfer_Uri();
+    	$sut->setUri($uri);
+    	$this->assertSame($uri, $sut->getUri());
+    }    
 
     public function testRetrieveFile()
     {
@@ -194,9 +111,12 @@ class Dfp_Datafeed_Transfer_Adapter_StreamTest extends PHPUnit_Framework_TestCas
 
         file_put_contents('vfs://base/src/test.csv', 'testdata');
 
+        $uri = new Dfp_Datafeed_Transfer_Uri();
+        $uri->setHost('base/src');
+        $uri->setSchema('vfs');
+        
         $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $sut->setHost('base/src');
-        $sut->setSchema('vfs');
+        $sut->setUri($uri);
         $sut->setBasePath('vfs://base/dest');
 
         $sut->retrieveFile('test.csv');
@@ -216,9 +136,12 @@ class Dfp_Datafeed_Transfer_Adapter_StreamTest extends PHPUnit_Framework_TestCas
 
         file_put_contents('vfs://base/src/test.csv', 'testdata');
 
+        $uri = new Dfp_Datafeed_Transfer_Uri();
+        $uri->setHost('base/dest');
+        $uri->setSchema('vfs');
+        
         $sut = new Dfp_Datafeed_Transfer_Adapter_Stream();
-        $sut->setHost('base/dest');
-        $sut->setSchema('vfs');
+        $sut->setUri($uri);
         $sut->setBasePath('vfs://base/src');
 
         $sut->sendFile('test.csv');
