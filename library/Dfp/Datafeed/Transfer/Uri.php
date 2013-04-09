@@ -234,6 +234,7 @@ class Dfp_Datafeed_Transfer_Uri implements Dfp_Option_Interface
 		
 		if (!is_null($this->getHost())) {
 			if (is_null($this->getSchema())) {
+				return '';
 				throw new Dfp_Datafeed_Transfer_Exception(
 					'Remote locations must specify a schema. (How do you want me to connect to your server?)'
 				);

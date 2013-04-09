@@ -42,6 +42,13 @@ class Dfp_Datafeed_Transfer_Adapter_Stream extends Dfp_Datafeed_Transfer_Adapter
      * @var string
      */
     protected $_basePath;
+    
+    /**
+     * Stream context options to set
+     * 
+     * @var array
+     */
+    protected $_context;
 
     /**
      * Getter for base path

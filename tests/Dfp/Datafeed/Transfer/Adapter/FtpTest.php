@@ -19,40 +19,12 @@ class Dfp_Datafeed_Transfer_Adapter_FtpTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue($passed, 'Exception not thrown');
 
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp(array('host'=>'testhost.com'));
-        $this->assertEquals('testhost.com', $sut->getHost());
+        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream(array('basePath'=>'/var/files'));
+        $this->assertEquals('/var/files', $sut->getBasePath());
 
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp(new Zend_Config(array('port'=>2222)));
-        $this->assertEquals(2222, $sut->getPort());
+        $sut = new Dfp_Datafeed_Transfer_Adapter_Stream(new Zend_Config(array('basePath'=>'/var/files')));
+        $this->assertEquals('/var/files', $sut->getBasePath());
 
-    }
-
-    public function testSetHost()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
-        $sut->setHost('example.com');
-
-        $this->assertEquals('example.com', $sut->getHost());
-    }
-
-    public function testGetHost()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
-        $this->assertNull($sut->getHost());
-    }
-
-    public function testSetPort()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
-        $sut->setPort('2222');
-
-        $this->assertEquals('2222', $sut->getPort());
-    }
-
-    public function testGetPort()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
-        $this->assertEquals('21', $sut->getPort());
     }
 
     public function testSetTimeout()
@@ -67,34 +39,6 @@ class Dfp_Datafeed_Transfer_Adapter_FtpTest extends PHPUnit_Framework_TestCase
     {
         $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
         $this->assertEquals(90, $sut->getTimeout());
-    }
-
-    public function testSetUsername()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
-        $sut->setUsername('user');
-
-        $this->assertEquals('user', $sut->getUsername());
-    }
-
-    public function testGetUsername()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
-        $this->assertEquals('anonymous', $sut->getUsername());
-    }
-
-    public function testSetPassword()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
-        $sut->setPassword('pass');
-
-        $this->assertEquals('pass', $sut->getPassword());
-    }
-
-    public function testGetPassword()
-    {
-        $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
-        $this->assertEquals('', $sut->getPassword());
     }
 
     public function testSetBasePath()
@@ -115,13 +59,21 @@ class Dfp_Datafeed_Transfer_Adapter_FtpTest extends PHPUnit_Framework_TestCase
     {
         $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
 
-        $this->assertInstanceOf('Dfp_Datafeed_Transfer_Adapter_Ftp', $sut->setPassive(true, true));
+        $this->assertInstanceOf('Dfp_Datafeed_Transfer_Adapter_Ftp', $sut->setPassive(true));
+        $this->assertTrue($sut->getPassive());
+    }
+    
+    public function testGetPassive()
+    {
+    	$sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
+    	
+    	$this->assertFalse($sut->getPassive());    	
     }
 
     /**
      * @dataProvider setOptionsProvider
      */
-    public function testSetOptions($var, $valid, $invalid, $message, $method)
+    public function testSetOptions($var, $valid, $expected, $invalid, $message, $method)
     {
         $options[$var] = $invalid;
         $sut = new Dfp_Datafeed_Transfer_Adapter_Ftp();
@@ -141,17 +93,28 @@ class Dfp_Datafeed_Transfer_Adapter_FtpTest extends PHPUnit_Framework_TestCase
 
         $sut->setOptions($options);
 
-        $this->assertEquals($valid, $sut->{'get' . $method}());
+        $this->assertEquals($expected, $sut->{'get' . $method}());
     }
 
     public function setOptionsProvider()
     {
+    	$uri = new Dfp_Datafeed_Transfer_Uri();
+    	$uri->setHost('example.com');
+
+    	$uri2 = new Dfp_Datafeed_Transfer_Uri();
+    	$uri2->setHost('example2.com');    	
+    	
         return array(
-            array('host', 'example.com', array(), 'Invalid Host', 'Host'),
-            array('port', '2222', array(), 'Invalid Port', 'Port'),
-            array('username', 'user', array(), 'Invalid Username', 'Username'),
-            array('password', 'pass', array(), 'Invalid Password', 'Password'),
-            array('basepath', 'C:\\feedfiles', array(), 'Invalid Basepath', 'BasePath'),
+            //array('schema', 'ftp', array(), 'Invalid Schema', 'Schema'),
+            //array('host', 'example.com', array(), 'Invalid Host', 'Host'),
+            //array('port', '2222', array(), 'Invalid Port', 'Port'),
+            //array('username', 'user', array(), 'Invalid Username', 'Username'),
+            //array('password', 'pass', array(), 'Invalid Password', 'Password'),
+        	array('uri', array('host'=>'example.com'), $uri, 'example.com', 'Invalid value for uri option', 'Uri'),
+        	array('uri', $uri2, $uri2, 'example.com', 'Invalid value for uri option', 'Uri'),
+        	array('basepath', 'C:\\feedfiles', 'C:\\feedfiles', array(), 'Invalid Basepath', 'BasePath'),
+        	array('passive', true, true, array('hello'), 'Invalid set passive flag, must be boolean.', 'Passive'),
+        	array('timeout', '30', '30', array('hello'), 'Invalid timeout value, must be a number.', 'Timeout')
         );
     }
 }

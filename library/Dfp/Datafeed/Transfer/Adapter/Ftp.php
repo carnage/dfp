@@ -29,6 +29,13 @@
 
 class Dfp_Datafeed_Transfer_Adapter_Ftp extends Dfp_Datafeed_Transfer_Adapter_Abstract
 {
+	/**
+	 * Holds the uri object used for remote connections
+	 *
+	 * @var Dfp_Datafeed_Transfer_Uri
+	 */
+	protected $_uri;	
+	
     /**
      * Contains the ftp connection resource.
      *
@@ -173,6 +180,16 @@ class Dfp_Datafeed_Transfer_Adapter_Ftp extends Dfp_Datafeed_Transfer_Adapter_Ab
     {
         $options = array_change_key_case($options);
 
+        if (isset($options['uri'])) {
+        	if ($options['uri'] instanceof Dfp_Datafeed_Transfer_Uri) {
+        		$this->setUri($options['uri']);
+        	} elseif (is_array($options['uri'])) {
+        		$this->getUri()->setOptions($options['uri']);
+        	} else {
+        		throw new Dfp_Datafeed_Transfer_Exception('Invalid value for uri option');
+        	}
+        	unset($options['uri']);
+        }        
         if (isset($options['basepath'])) {
             if (is_string($options['basepath'])) {
                 $this->setBasePath($options['basepath']);
@@ -182,7 +199,7 @@ class Dfp_Datafeed_Transfer_Adapter_Ftp extends Dfp_Datafeed_Transfer_Adapter_Ab
         }
         if (isset($options['passive'])) {
             if (is_bool($options['passive'])) {
-                $this->setPassive($options['basepath']);
+                $this->setPassive($options['passive']);
             } else {
                 throw new Dfp_Datafeed_Transfer_Exception('Invalid set passive flag, must be boolean.');
             }
@@ -191,7 +208,7 @@ class Dfp_Datafeed_Transfer_Adapter_Ftp extends Dfp_Datafeed_Transfer_Adapter_Ab
             if (is_numeric($options['timeout'])) {
                 $this->setTimeout($options['timeout']);
             } else {
-                throw new Dfp_Datafeed_Transfer_Exception('Invalid timeout flag, must be a number.');
+                throw new Dfp_Datafeed_Transfer_Exception('Invalid timeout value, must be a number.');
             }
         }
     }

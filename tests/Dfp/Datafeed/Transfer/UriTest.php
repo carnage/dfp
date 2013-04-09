@@ -168,22 +168,11 @@ class Dfp_Datafeed_Transfer_UriTest extends PHPUnit_Framework_TestCase
     /**
     * @dataProvider getUriProvider
     */
-    public function testGetUri($options, $expected, $expectedException = null)
+    public function testGetUri($options, $expected)
     {
         $sut = new Dfp_Datafeed_Transfer_Uri();
         $sut->setOptions($options);
-        try {
-            $uri = $sut->__toString();
-        } catch (Dfp_Datafeed_Transfer_Exception $e){
-            if (!is_null($expectedException)) {
-                $this->assertEquals($e->getMessage(),$expectedException);
-                return;
-            }
-        }
-        
-        if (!is_null($expectedException)) {
-        	$this->fail('Exception not thrown');
-        }
+        $uri = $sut->__toString();
 
         $this->assertEquals($expected, $uri);
     }
@@ -191,11 +180,7 @@ class Dfp_Datafeed_Transfer_UriTest extends PHPUnit_Framework_TestCase
     public function getUriProvider()
     {
         return array(
-            array(
-            	array('host'=>'ftp.example.com'), 
-            	null, 
-            	'Remote locations must specify a schema. (How do you want me to connect to your server?)'
-            ),
+            array(array('host'=>'ftp.example.com'),	''),
             array(array('host'=>'ftp.example.com', 'schema'=>'ftp'), 'ftp://ftp.example.com'),
         	array(array('host'=>'ftp.example.com', 'schema'=>'ftp', 'path'=>'path'), 'ftp://ftp.example.com/path'),
             array(array('host'=>'ftp.example.com', 'schema'=>'ftp', 'username'=>'user'), 'ftp://user@ftp.example.com'),
