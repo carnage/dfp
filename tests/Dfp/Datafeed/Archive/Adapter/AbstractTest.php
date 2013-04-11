@@ -121,5 +121,116 @@ class Dfp_Datafeed_Archive_Adapter_AbstractTest extends PHPUnit_Framework_TestCa
             array('extractPath', 'C:\\tmp\\', array(), 'Invalid extract path specified', 'ExtractPath'),
         );
     }
-
+    
+    public function testFactoryExceptions()
+    {
+    	//test for requrired missing parameters
+    	$options = array();
+    	try {
+    		$class = Dfp_Datafeed_Archive_Adapter_Abstract::factory($options);
+    	} catch (Dfp_Datafeed_Archive_Adapter_Exception $e) {
+    		$message = $e->getMessage();
+    	}
+    
+    	$this->assertEquals('You must provide either the classname or the full classname' , $message);
+    	 
+    	//test for correct classname generation with namespaces
+    	$targetClass = uniqid('Ftp');
+    	$options = array(
+    			'classname' => $targetClass,
+    			'phpNamespace'=>true,
+    			'namespace'=>'Adapter',
+    			'prefix'=>'Dft'
+    	);
+    	 
+    	try {
+    		$class = Dfp_Datafeed_Archive_Adapter_Abstract::factory($options);
+    	} catch (Dfp_Datafeed_Archive_Adapter_Exception $e) {
+    		$message = $e->getMessage();
+    	}
+    	 
+    	$this->assertEquals('Dft\\Adapter\\' . $targetClass . ' was not found.' , $message);
+    	 
+    	//test for correct response for an none existant class
+    	$targetClass = uniqid('Ftp');
+    	$options = array('fullClassname' => $targetClass);
+    	 
+    	try {
+    		$class = Dfp_Datafeed_Archive_Adapter_Abstract::factory($options);
+    	} catch (Dfp_Datafeed_Archive_Adapter_Exception $e) {
+    		$message = $e->getMessage();
+    	}
+    	 
+    	$this->assertEquals($targetClass . ' was not found.' , $message);
+    	 
+    	//test for creating class which dosn't implement the correct interface
+    	$this->getMockForAbstractClass(
+    			'Dfp_Datafeed_Archive',
+    			array(),
+    			$targetClass
+    	);
+    
+    	try {
+    		$class = Dfp_Datafeed_Archive_Adapter_Abstract::factory($options);
+    	} catch (Dfp_Datafeed_Archive_Adapter_Exception $e) {
+    		$message = $e->getMessage();
+    	}
+    
+    	$this->assertEquals($targetClass . ' does not implement Dfp_Datafeed_Archive_Adapter_Interface', $message);
+    }
+    
+    public function testFactorySetOptions()
+    {
+    	$zipMock = $this->getMock('ZipArchive');
+    	
+    	$options = array('classname' => 'Zip', 'options'=>array('zip'=>$zipMock));
+    	$class = Dfp_Datafeed_Archive_Adapter_Abstract::factory($options);
+    	 
+    	$this->assertEquals($zipMock, $class->getZip());
+    }
+    
+    /**
+     * @dataProvider factoryProvider
+     */
+    public function testFactory($targetClass, $options)
+    {
+    	//generate the expected classname in php's memory
+    	$this->getMockForAbstractClass(
+    			'Dfp_Datafeed_Archive_Adapter_Abstract',
+    			array(),
+    			$targetClass
+    	);
+    	 
+    	 
+    	$class = Dfp_Datafeed_Archive_Adapter_Abstract::factory($options);
+    	$this->assertInstanceOf($targetClass, $class);
+    }
+    
+    public function factoryProvider()
+    {
+    	$classnames[] = uniqid('Ftp');
+    	$classnames[] = uniqid('Ftp');
+    	$classnames[] = uniqid('Ftp');
+    	$classnames[] = uniqid('Ftp');
+    	$classnames[] = uniqid('Ftp');
+    	 
+    	return array(
+    			array(
+    					'Dfp_Datafeed_Archive_Adapter_' . $classnames[0],
+    					array('classname'=>$classnames[0])
+    			),
+    			array(
+    					'Pfd_Datafeed_Archive_Adapter_' . $classnames[1],
+    					array('prefix'=>'Pfd', 'classname'=>$classnames[1])
+    			),
+    			array(
+    					'Dfp_Adapter_' . $classnames[2],
+    					array('namespace'=>'Adapter', 'classname'=>$classnames[2])
+    			),
+    			array(
+    					$classnames[3],
+    					array('fullClassname'=>$classnames[3])
+    			),
+    	);
+    }
 }

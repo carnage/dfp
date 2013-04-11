@@ -92,29 +92,6 @@ interface Dfp_Datafeed_Archive_Interface extends Dfp_Error_Interface, Dfp_Option
     public function getExtractPath();
 
     /**
-    * Sets the string name of the adapter to use
-    *
-    * @param string $adapter
-    * @return Dfp_Datafeed_Archive_Interface
-    */
-    public function setAdapterString($adapter);
-
-    /**
-     * Sets the string namespace to use for the adapter
-     *
-     * @param string $namespace
-     * @return Dfp_Datafeed_Archive_Interface
-     */
-    public function setAdapterNamespace($namespace);
-
-    /**
-     * Gets the namespace of the adapter.
-     *
-     * @return string
-     */
-    public function getAdapterNamespace();
-
-    /**
      * Sets the adapter directly.
      *
      * @param Dfp_Datafeed_Archive_Adapter_Interface $adapter

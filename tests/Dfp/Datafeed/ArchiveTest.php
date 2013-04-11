@@ -10,48 +10,7 @@ class Dfp_Datafeed_ArchiveTest extends PHPUnit_Framework_TestCase
     public function testGetAdapter()
     {
         $sut = new Dfp_Datafeed_Archive();
-        try {
-            $sut->getAdapter();
-        } catch (Dfp_Datafeed_Archive_Exception $e) {
-        	$this->assertEquals($e->getMessage(), 'Invalid Adapter Specified');
-        	return;
-        }
-
-        $this->fail('Exception not thrown');
-    }
-
-    public function testSetAdapterString()
-    {
-        $name = 'test' . uniqid();
-        $className = 'Dfp_Datafeed_Archive_Adapter_' . ucfirst($name);
-
-        $sut = new Dfp_Datafeed_Archive();
-        $mockAdapter = $this->getMock(
-        	'Dfp_Datafeed_Archive_Adapter_Interface',
-        	array(),
-        	array(),
-        	$className
-        );
-
-        $sut->setAdapterString($name);
-
-        $this->assertInstanceOf($className, $sut->getAdapter());
-    }
-
-    public function testGetAdapterNamespace()
-    {
-        $sut = new Dfp_Datafeed_Archive();
-
-        $this->assertEquals('Dfp_Datafeed_Archive_Adapter', $sut->getAdapterNamespace());
-    }
-
-    public function testSetAdapterNamespace()
-    {
-        $sut = new Dfp_Datafeed_Archive();
-
-        $sut->setAdapterNamespace('test');
-
-        $this->assertEquals('test', $sut->getAdapterNamespace());
+        $this->assertNull($sut->getAdapter());
     }
 
     public function testSetAdapter()
@@ -78,17 +37,13 @@ class Dfp_Datafeed_ArchiveTest extends PHPUnit_Framework_TestCase
 
     public function testSetOptions()
     {
-        $options = array('adapter'=>'ftp','adapterOption'=>'value','adapterNamespace'=>'Test_Namespace');
+        $options = array('adapter'=>array('classname'=>'zip'));
 
-        $sut = $this->getMock('Dfp_Datafeed_Archive', array('getAdapter','setAdapterString', 'setAdapterNamespace'));
+        $sut = $this->getMock('Dfp_Datafeed_Archive', array('setAdapter'));
 
-        $mockAdapter = $this->getMock('Dfp_Datafeed_Archive_Adapter_Interface');
-        $mockAdapter->expects($this->once())->method('setOptions')
-                    ->with($this->equalTo(array('adapterOption'=>'value')));
-        $sut->expects($this->any())->method('getAdapter')->will($this->returnValue($mockAdapter));
-
-        $sut->expects($this->once())->method('setAdapterString')->with($this->equalTo('ftp'));
-        $sut->expects($this->once())->method('setAdapterNamespace')->with($this->equalTo('Test_Namespace'));
+        $sut->expects($this->once())
+            ->method('setAdapter')
+            ->with($this->isInstanceOf('Dfp_Datafeed_Archive_Adapter_Zip'));
 
         $sut->setOptions($options);
 
@@ -102,31 +57,7 @@ class Dfp_Datafeed_ArchiveTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($mockAdapter, $sut->getAdapter());
 
-        //test with invalid adapter
 
-        $passed = false;
-        $sut = new Dfp_Datafeed_Archive();
-        $options = array('adapter'=>array());
-        try {
-            $sut->setOptions($options);
-        } catch (Dfp_Datafeed_Archive_Exception $e) {
-            if ($e->getMessage() == 'Invalid adapter specified') {
-                $passed = true;
-            }
-        }
-        $this->assertTrue($passed, 'Adapter exception not thrown');
-
-        $sut = new Dfp_Datafeed_Archive();
-        $options = array('adapterNamespace'=>array());
-        try {
-            $sut->setOptions($options);
-        } catch (Dfp_Datafeed_Archive_Exception $e) {
-            if ($e->getMessage() == 'Invalid adapter namespace specified') {
-                return;
-            }
-        }
-
-        $this->fail('Adapter namespace exception not thrown');
     }
 
     public function test__construct()

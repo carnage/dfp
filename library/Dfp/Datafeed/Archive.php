@@ -36,12 +36,6 @@ class Dfp_Datafeed_Archive implements Dfp_Datafeed_Archive_Interface
     protected $_adapter;
 
     /**
-     * Namespace for adapter
-     * @var string
-     */
-    protected $_adapterNamespace = 'Dfp_Datafeed_Archive_Adapter';
-
-    /**
      * @see Dfp_Option_Interface::__construct()
      */
     public function __construct($options = null)
@@ -138,47 +132,10 @@ class Dfp_Datafeed_Archive implements Dfp_Datafeed_Archive_Interface
     }
 
     /**
-     * @see Dfp_Datafeed_Archive_Interface::setAdapterString()
-     * @return Dfp_Datafeed_Archive
-     */
-    public function setAdapterString($adapter)
-    {
-        $this->_adapter = $adapter;
-        return $this;
-    }
-
-    /**
-     * @see Dfp_Datafeed_Archive_Interface::setAdapterNamespace()
-     * @return Dfp_Datafeed_Archive
-     */
-    public function setAdapterNamespace($namespace)
-    {
-        $this->_adapterNamespace = $namespace;
-        return $this;
-    }
-
-    /**
-     * @see Dfp_Datafeed_Archive_Interface::getAdapterNamespace()
-     */
-    public function getAdapterNamespace()
-    {
-        return $this->_adapterNamespace;
-    }
-
-    /**
      * @see Dfp_Datafeed_Archive_Interface::getAdapter()
      */
     public function getAdapter()
     {
-        if (!($this->_adapter instanceof Dfp_Datafeed_Archive_Adapter_Interface)) {
-            if (is_null($this->_adapter)) {
-                throw new Dfp_Datafeed_Archive_Exception('Invalid Adapter Specified');
-            }
-            $class = $this->getAdapterNamespace() . '_' . $this->_adapter;
-
-            $this->_adapter = new $class();
-        }
-
         return $this->_adapter;
     }
 
@@ -192,23 +149,11 @@ class Dfp_Datafeed_Archive implements Dfp_Datafeed_Archive_Interface
         if (isset($options['adapter'])) {
             if ($options['adapter'] instanceof Dfp_Datafeed_Archive_Adapter_Interface) {
                 $this->setAdapter($options['adapter']);
-            } elseif (is_string($options['adapter'])) {
-                $this->setAdapterString($options['adapter']);
             } else {
-                throw new Dfp_Datafeed_Archive_Exception('Invalid adapter specified');
+                $this->setAdapter(Dfp_Datafeed_Archive_Adapter_Abstract::factory($options['adapter']));
             }
             unset($options['adapter']);
         }
-        if (isset($options['adapterNamespace'])) {
-            if (is_string($options['adapterNamespace'])) {
-                $this->setAdapterNamespace($options['adapterNamespace']);
-            } else {
-                throw new Dfp_Datafeed_Archive_Exception('Invalid adapter namespace specified');
-            }
-            unset($options['adapterNamespace']);
-        }
-
-        $this->getAdapter()->setOptions($options);
 
         return $this;
     }
